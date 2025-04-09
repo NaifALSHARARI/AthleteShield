@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+قائمة اللاعبين | {{ block.super }}
+{% endblock title %}
+
+{% block content %}
+
+
+<link rel="stylesheet" href="{% static 'css/player_list.css' %}">
+
+<div class="stats-summary">
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-heart"></i>
+    </div>
+    <div class="stat-value">{{ total_injuries }}</div>
+    <div class="stat-label">إجمالي الإصابات</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-dumbbell"></i>
+    </div>
+    <div class="stat-value">{{ training_load_avg }}</div>
+    <div class="stat-label">متوسط الحمل التدريبي</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="stat-value">{{ high_risk_count }}</div>
+    <div class="stat-label">حالات خطر مرتفع</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-users"></i>
+    </div>
+    <div class="stat-value">{{ players|length }}</div>
+    <div class="stat-label">إجمالي اللاعبين</div>
+  </div>
+</div>
+
+<div class="content-container">
+  <div class="d-flex justify-content-between flex-wrap align-items-center mb-4">
+    <div class="d-flex align-items-center mb-2">
+      <a href="{% url 'player_add' %}" class="btn btn-primary-custom add-player-btn mr-3">
+        <i class="fas fa-plus btn-icon"></i> إضافة لاعب جديد
+      </a>
+      <div class="search-container">
+        <input type="text" class="search-input" id="playerSearch" placeholder="بحث عن لاعب...">
+        <i class="fas fa-search search-icon"></i>
+      </div>
+    </div>
+    <h2 class="page-title mb-0">
+      <i class="fas fa-users"></i> قائمة اللاعبين
+    </h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="custom-table" id="playersTable">
+      <thead>
+        <tr>
+          <th><i class="fas fa-user"></i> اسم اللاعب</th>
+          <th><i class="fas fa-stopwatch"></i> دقائق اللعب</th>
+          <th><i class="fas fa-dumbbell"></i> الأحمال التدريبية</th>
+          <th><i class="fas fa-notes-medical"></i> إصابات سابقة</th>
+          <th><i class="fas fa-birthday-cake"></i> العمر</th>
+          <th><i class="fas fa-cogs"></i> الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in players %}
+        <tr>
+          <td>{{ p.name }}</td>
+          <td>
+            <div class="d-flex align-items-center justify-content-center">
+              <i class="fas fa-tachometer-alt mr-2" style="color: var(--primary-dark);"></i>
+              {{ p.minutes_played }}
+            </div>
+          </td>
+          <td>
+            <div class="progress" style="height: 10px; border-radius: 5px; width: 80px; margin: 0 auto;">
+              <div class="progress-bar bg-{% if p.training_load <= 30 %}success{% elif p.training_load <= 70 %}warning{% else %}danger{% endif %}" role="progressbar" style="width: {{ p.training_load }}%" aria-valuenow="{{ p.training_load }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small>{{ p.training_load }}%</small>
+          </td>
+          <td>
+            {% if p.prev_injuries == 0 %}
+            <span class="badge badge-injury badge-injury-0">
+              <i class="fas fa-check"></i> {{ p.prev_injuries }}
+            </span>
+            {% elif p.prev_injuries <= 2 %}
+            <span class="badge badge-injury badge-injury-1">
+              <i class="fas fa-exclamation"></i> {{ p.prev_injuries }}
+            </span>
+            {% else %}
+            <span class="badge badge-injury badge-injury-3plus">
+              <i class="fas fa-exclamation-triangle"></i> {{ p.prev_injuries }}
+            </span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex align-items-center justify-content-center">
+              <i class="fas fa-user-clock mr-2" style="color: var(--primary-dark);"></i>
+              {{ p.age }}
+            </div>
+          </td>
+          <td>
+            <div class="action-btn-group">
+              <a href="{% url 'player_detail' p.pk %}" class="btn btn-primary-custom" data-toggle="tooltip" title="عرض التقييم">
+                <i class="fas fa-chart-line btn-icon"></i> التقييم
+              </a>
+              <a href="{% url 'player_delete' p.pk %}" class="btn btn-danger-custom" data-toggle="tooltip" title="حذف اللاعب">
+                <i class="fas fa-trash-alt btn-icon"></i> حذف
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="risk-legend">
+    <h5 class="mb-3 text-primary">
+      <i class="fas fa-info-circle mr-2"></i> مؤشرات مستوى الخطر
+    </h5>
+    <div class="d-flex flex-wrap justify-content-around">
+      <div class="d-flex align-items-center mb-2">
+        <span class="badge badge-injury badge-injury-0 mr-2">
+          <i class="fas fa-check"></i>0
+        </span>
+        <span>لا توجد إصابات سابقة</span>
+      </div>
+      <div class="d-flex align-items-center mb-2">
+        <span class="badge badge-injury badge-injury-1 mr-2">
+          <i class="fas fa-exclamation"></i>1-2
+        </span>
+        <span>إصابات متوسطة</span>
+      </div>
+      <div class="d-flex align-items-center mb-2">
+        <span class="badge badge-injury badge-injury-3plus mr-2">
+          <i class="fas fa-exclamation-triangle"></i>3+
+        </span>
+        <span>إصابات متعددة - خطر مرتفع</span>
+      </div>
+    </div>
+  </div>
+
+</div> 
+
+<div class="tips-container">
+  <h4 class="tips-title">
+    <i class="fas fa-stethoscope"></i> نصائح طبية للوقاية من الإصابات
+  </h4>
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-heartbeat"></i>
+          <h5 class="card-title">الإحماء الجيد</h5>
+          <p class="card-text">
+            احرص على أداء تمارين الإحماء والتمديد قبل أي نشاط بدني لتجنب الإجهاد والإصابات.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-running"></i>
+          <h5 class="card-title">التدرُّج في التدريب</h5>
+          <p class="card-text">
+            زيادة الأحمال التدريبية بشكل تدريجي يقي من الإصابات المفاجئة والإجهاد الزائد.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-apple-alt"></i>
+          <h5 class="card-title">التغذية والترطيب</h5>
+          <p class="card-text">
+            حافظ على نظام غذائي متوازن وشرب الماء بانتظام لدعم عملية التعافي وتقليل المخاطر.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

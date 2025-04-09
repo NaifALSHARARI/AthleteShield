@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}الفحوصات الطبية{% endblock %}
+
+{% block content %}
+    <div class="content-container">
+        <h2 class="text-center mb-4">قائمة الفحوصات الطبية للاعبين</h2>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>اسم اللاعب</th>
+                    <th>العمر</th>
+                    <th>دقائق اللعب</th>
+                    <th>الحمل التدريبي</th>
+                    <th>الإصابات السابقة</th>
+                    <th>نسبة الخطر</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in tests_data %}
+                    <tr>
+                        <td>{{ player.name }}</td>
+                        <td>{{ player.age }}</td>
+                        <td>{{ player.minutes_played }}</td>
+                        <td>{{ player.training_load }}</td>
+                        <td>{{ player.prev_injuries }}</td>
+                        <td>{{ player.risk_percent }}%</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

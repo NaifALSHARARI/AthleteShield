@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+تقييم مخاطر الإصابة | نظام تقييم مخاطر الإصابات الرياضية
+{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/player_detail.css' %}">
+
+<div class="content-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{% url 'player_list' %}" class="btn btn-secondary-custom back-button">
+      <i class="fas fa-arrow-right btn-icon"></i> العودة للقائمة
+    </a>
+    <h2 class="page-title mb-0">
+      <i class="fas fa-clipboard-check"></i> تقييم مخاطر الإصابة
+    </h2>
+  </div>
+
+  <div class="player-name">
+    <h3><i class="fas fa-user-injured mr-2"></i> اللاعب: {{ player.name }}</h3>
+  </div>
+
+  <div class="player-info-section">
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">
+          <i class="fas fa-stopwatch"></i> دقائق اللعب:
+        </div>
+        <div>{{ player.minutes_played }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">
+          <i class="fas fa-notes-medical"></i> إصابات سابقة:
+        </div>
+        <div>
+          {% if player.prev_injuries == 0 %}
+            <span class="injury-badge injury-badge-0">{{ player.prev_injuries }}</span>
+          {% elif player.prev_injuries <= 2 %}
+            <span class="injury-badge injury-badge-1">{{ player.prev_injuries }}</span>
+          {% else %}
+            <span class="injury-badge injury-badge-3plus">{{ player.prev_injuries }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">
+          <i class="fas fa-dumbbell"></i> الأحمال التدريبية:
+        </div>
+        <div>{{ player.training_load }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">
+          <i class="fas fa-birthday-cake"></i> العمر:
+        </div>
+        <div>{{ player.age }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="risk-section">
+    <h3 class="risk-title">
+      <i class="fas fa-chart-line"></i> مؤشر خطر الإصابة
+    </h3>
+    <div class="risk-meter">
+      <div class="risk-progress" style="width: {{ risk_percent }}%"></div>
+      <div class="risk-percentage">{{ risk_percent }}%</div>
+    </div>
+    <div class="risk-indicator">
+      {% if risk_percent < 30 %}
+        <span class="risk-badge risk-low"><i class="fas fa-check-circle btn-icon"></i> خطر منخفض</span>
+      {% elif risk_percent < 60 %}
+        <span class="risk-badge risk-medium"><i class="fas fa-exclamation-circle btn-icon"></i> خطر متوسط</span>
+      {% else %}
+        <span class="risk-badge risk-high"><i class="fas fa-exclamation-triangle btn-icon"></i> خطر مرتفع</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="recommendations-section">
+    <div class="recommendations-title">
+      <i class="fas fa-clipboard-list"></i> التوصيات الطبية
+    </div>
+    <div>
+      {% for rec in recommendations %}
+        <div class="recommendation-item">
+          <div class="recommendation-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div>{{ rec }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="recommendations-section">
+    <div class="recommendations-title" style="background-color: #27ae60;">
+      <i class="fas fa-clipboard-check"></i> خطة الوقاية المقترحة
+    </div>
+    <div>
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+        <div>برنامج تمارين الإحماء المخصص لتقليل احتمالية الإصابة.</div>
+      </div>
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <i class="fas fa-running"></i>
+        </div>
+        <div>تمارين حماية المفاصل وتقوية عضلات الأربطة.</div>
+      </div>
+      <div class="recommendation-item">
+        <div class="recommendation-icon">
+          <i class="fas fa-apple-alt"></i>
+        </div>
+        <div>نظام غذائي داعم للعضلات والمفاصل للوقاية من الإصابات.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="recommendations-section">
+    <div class="recommendations-title" style="background-color: #3a9db5;">
+      <i class="fas fa-chart-bar"></i> إحصائيات المواسم السابقة
+    </div>
+    <div style="padding: 15px;">
+      <div class="row text-center">
+        <div class="col-md-3 col-6 mb-3">
+          <div style="font-weight: bold; color: var(--primary);">الموسم الماضي</div>
+          <div style="font-size: 2rem; font-weight: 700; color: var(--primary-dark);">
+            {{ player.prev_injuries }}
+          </div>
+          <div style="color: #6c757d; font-size: 0.9rem;">إصابات</div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+          <div style="font-weight: bold; color: var(--primary);">الموسم الماضي</div>
+          <div style="font-size: 2rem; font-weight: 700; color: var(--primary-dark);">
+            {{ player.minutes_played }}
+          </div>
+          <div style="color: #6c757d; font-size: 0.9rem;">دقائق اللعب</div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+          <div style="font-weight: bold; color: var(--primary);">المعدل المتوقع</div>
+          <div style="font-size: 2rem; font-weight: 700; color: {% if risk_percent < 30 %}var(--success){% elif risk_percent < 60 %}var(--warning){% else %}var(--danger){% endif %};">
+            {{ risk_percent }}%
+          </div>
+          <div style="color: #6c757d; font-size: 0.9rem;">احتمالية الإصابة</div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+          <div style="font-weight: bold; color: var(--primary);">تقييم التعافي</div>
+          <div style="font-size: 2rem; font-weight: 700; color: var(--primary-dark);">
+            100%
+          </div>
+          <div style="color: #6c757d; font-size: 0.9rem;">التعافي</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

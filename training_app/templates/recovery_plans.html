@@ -1,0 +1,299 @@
+{% extends 'base.html' %} 
+{% load static %}  
+
+{% block title %}خطط التعافي للاعبين{% endblock title %}  
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/recovery_plans.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="dashboard-container">
+    <div class="page-header">
+        <h1 class="main-title"><i class="fas fa-heartbeat"></i> خطط التعافي للاعبين</h1>
+        <p class="subtitle">ملخص خطط التعافي الشخصية لكل لاعب بناءً على تقييم المخاطر الصحية</p>
+    </div>
+    
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon bg-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-details">
+                <span class="stat-value">{{ high_risk_count|default:"0" }}</span>
+                <span class="stat-label">خطر مرتفع</span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon bg-warning">
+                <i class="fas fa-exclamation"></i>
+            </div>
+            <div class="stat-details">
+                <span class="stat-value">{{ medium_risk_count|default:"0" }}</span>
+                <span class="stat-label">خطر متوسط</span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon bg-success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-details">
+                <span class="stat-value">{{ low_risk_count|default:"0" }}</span>
+                <span class="stat-label">خطر منخفض</span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon bg-info">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-details">
+                <span class="stat-value">{{ recovery_plans|length }}</span>
+                <span class="stat-label">إجمالي اللاعبين</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-filter">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="playerSearch" placeholder="ابحث عن لاعب..." class="search-input">
+        </div>
+        <div class="risk-filter">
+            <span class="filter-label">تصفية حسب المخاطر:</span>
+            <button class="filter-btn active" data-filter="all">الكل</button>
+            <button class="filter-btn" data-filter="high">عالي</button>
+            <button class="filter-btn" data-filter="medium">متوسط</button>
+            <button class="filter-btn" data-filter="low">منخفض</button>
+        </div>
+    </div>
+
+    <div class="table-responsive recovery-table-container">
+        <table class="recovery-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-user"></i> اسم اللاعب</th>
+                    <th><i class="fas fa-chart-line"></i> نسبة الخطر</th>
+                    <th><i class="fas fa-notes-medical"></i> خطة التعافي</th>
+                    <th><i class="fas fa-info-circle"></i> تفاصيل الخطة</th>
+                    <th><i class="fas fa-clipboard-list"></i> التوصيات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in recovery_plans %}
+                    {% if plan.risk_percent > 70 %}
+                        <tr class="player-row high-risk" data-risk="high">
+                    {% elif plan.risk_percent > 40 %}
+                        <tr class="player-row medium-risk" data-risk="medium">
+                    {% else %}
+                        <tr class="player-row low-risk" data-risk="low">
+                    {% endif %}
+                        <td class="player-name">
+                            <div class="player-info">
+                                <div class="player-avatar">{{ plan.player_name|slice:":1" }}</div>
+                                <span>{{ plan.player_name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="risk-meter">
+                                <div class="risk-progress">
+                                    {% if plan.risk_percent > 70 %}
+                                        <div class="risk-bar high" style="width: {{ plan.risk_percent }}%"></div>
+                                    {% elif plan.risk_percent > 40 %}
+                                        <div class="risk-bar medium" style="width: {{ plan.risk_percent }}%"></div>
+                                    {% else %}
+                                        <div class="risk-bar low" style="width: {{ plan.risk_percent }}%"></div>
+                                    {% endif %}
+                                </div>
+                                <div class="risk-percentage">
+                                    {% if plan.risk_percent > 70 %}
+                                        <span class="risk-badge high">{{ plan.risk_percent }}%</span>
+                                    {% elif plan.risk_percent > 40 %}
+                                        <span class="risk-badge medium">{{ plan.risk_percent }}%</span>
+                                    {% else %}
+                                        <span class="risk-badge low">{{ plan.risk_percent }}%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="plan-cell">{{ plan.recovery_plan.plan }}</td>
+                        <td class="details-cell">{{ plan.recovery_plan.details }}</td>
+                        <td class="recommendation-cell">{{ plan.recovery_plan.recommendation }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="charts-section">
+        <h3 class="section-title"><i class="fas fa-chart-pie"></i> تحليل خطط التعافي</h3>
+        
+        <div class="charts-container">
+            <div class="chart-card">
+                <h4 class="chart-title">توزيع مستويات المخاطر</h4>
+                <div class="chart-wrapper">
+                    <canvas id="riskDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h4 class="chart-title">تطور نسب المخاطر</h4>
+                <div class="chart-wrapper">
+                    <canvas id="riskTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-lightbulb"></i>
+                <h4>نصائح للتعافي الأمثل</h4>
+            </div>
+            <ul class="info-list">
+                <li>الالتزام بخطط التغذية المخصصة لكل لاعب</li>
+                <li>متابعة الراحة وأوقات النوم بشكل منتظم</li>
+                <li>المراجعة الدورية للإصابات السابقة لتجنب تكرارها</li>
+                <li>الالتزام بتمارين الإحماء والإطالة قبل التدريبات</li>
+            </ul>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-exclamation-circle"></i>
+                <h4>علامات تتطلب عناية فورية</h4>
+            </div>
+            <ul class="info-list warning">
+                <li>ظهور ألم حاد مفاجئ أثناء التمرين</li>
+                <li>تورم ملحوظ في مناطق الإصابة السابقة</li>
+                <li>انخفاض مستوى الأداء بشكل ملحوظ</li>
+                <li>الشعور بالإجهاد المستمر لأكثر من ٤٨ ساعة</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $("#playerSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $(".player-row").filter(function() {
+                $(this).toggle($(this).find(".player-info span").text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+        
+        $(".filter-btn").click(function() {
+            $(".filter-btn").removeClass("active");
+            $(this).addClass("active");
+            
+            var filterValue = $(this).data("filter");
+            
+            if (filterValue === "all") {
+                $(".player-row").show();
+            } else {
+                $(".player-row").hide();
+                $(".player-row[data-risk='" + filterValue + "']").show();
+            }
+        });
+    });
+
+    var riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
+    var riskChart = new Chart(riskCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['مخاطر عالية', 'مخاطر متوسطة', 'مخاطر منخفضة'],
+            datasets: [{
+                data: [
+                    {{ high_risk_count|default:"0" }}, 
+                    {{ medium_risk_count|default:"0" }}, 
+                    {{ low_risk_count|default:"0" }}
+                ],
+                backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Cairo, sans-serif'
+                        }
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+    
+    var trendCtx = document.getElementById('riskTrendChart').getContext('2d');
+    var trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+            datasets: [
+                {
+                    label: 'مخاطر عالية',
+                    data: [6, 5, 8, 7, 5, {{ high_risk_count|default:"4" }}],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'مخاطر متوسطة',
+                    data: [9, 8, 7, {{ medium_risk_count|default:"6" }}, 6, {{ medium_risk_count|default:"5" }}],
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'مخاطر منخفضة',
+                    data: [3, 5, 4, {{ low_risk_count|default:"7" }}, 8, {{ low_risk_count|default:"9" }}],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Cairo, sans-serif'
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock content %}

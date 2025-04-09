@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+التقارير والإحصائيات | {{ block.super }}
+{% endblock title %}
+
+{% block content %}
+<div class="content-container">
+  <h2 class="page-title mb-4">
+    <i class="fas fa-chart-pie"></i> التقارير والإحصائيات
+  </h2>
+  
+  <div class="row">
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-users fa-2x text-primary"></i>
+          <h5 class="card-title mt-3">عدد اللاعبين</h5>
+          <p class="card-text" style="font-size: 1.2rem; font-weight: bold;">
+            {{ players.count }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+          <h5 class="card-title mt-3">خطر مرتفع</h5>
+          <p class="card-text" style="font-size: 1.2rem; font-weight: bold;">
+            {{ high_risk_count }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-heart fa-2x text-danger"></i>
+          <h5 class="card-title mt-3">إجمالي الإصابات</h5>
+          <p class="card-text" style="font-size: 1.2rem; font-weight: bold;">
+            {{ total_injuries }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <i class="fas fa-dumbbell fa-2x text-success"></i>
+          <h5 class="card-title mt-3">متوسط الحمل التدريبي</h5>
+          <p class="card-text" style="font-size: 1.2rem; font-weight: bold;">
+            {{ training_load_avg }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fas fa-chart-line"></i> مخطط الحمل التدريبي</h5>
+          <canvas id="trainingLoadChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fas fa-chart-pie"></i> توزيع الإصابات</h5>
+          <canvas id="injuryDistributionChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive mt-4">
+    <h4><i class="fas fa-table"></i> تفاصيل اللاعبين</h4>
+    <table class="table table-bordered">
+      <thead class="thead-light">
+        <tr>
+          <th>اسم اللاعب</th>
+          <th>دقائق اللعب</th>
+          <th>الحمل التدريبي</th>
+          <th>الإصابات السابقة</th>
+          <th>العمر</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for p in players %}
+        <tr>
+          <td>{{ p.name }}</td>
+          <td>{{ p.minutes_played }}</td>
+          <td>{{ p.training_load }}</td>
+          <td>{{ p.prev_injuries }}</td>
+          <td>{{ p.age }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var trainingLoadData = JSON.parse('{{ training_load_data|safe }}');
+  var injuryDistributionData = JSON.parse('{{ injury_distribution_data|safe }}');
+
+  var ctxLoad = document.getElementById('trainingLoadChart').getContext('2d');
+  var trainingLoadChart = new Chart(ctxLoad, {
+    type: 'bar',
+    data: {
+      labels: trainingLoadData.labels,
+      datasets: [{
+        label: 'الحمل التدريبي',
+        data: trainingLoadData.values,
+        backgroundColor: 'rgba(44,125,146,0.4)',
+        borderColor: 'rgba(44,125,146,1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          suggestedMin: 0,
+          suggestedMax: 100
+        }
+      }
+    }
+  });
+
+  var ctxInjury = document.getElementById('injuryDistributionChart').getContext('2d');
+  var injuryDistributionChart = new Chart(ctxInjury, {
+    type: 'doughnut',
+    data: {
+      labels: injuryDistributionData.labels,
+      datasets: [{
+        data: injuryDistributionData.values,
+        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+</script>
+{% endblock content %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+إضافة لاعب جديد | نظام تقييم مخاطر الإصابات الرياضية
+{% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/player_add.css' %}">
+
+<div class="content-container">
+  <h2 class="page-title">
+    <i class="fas fa-user-plus"></i> إضافة لاعب جديد
+  </h2>
+  <p class="page-subtitle">أدخل بيانات اللاعب لتقييم مخاطر الإصابة</p>
+  
+  <form method="POST" novalidate>
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="id_name">
+        <i class="fas fa-user label-icon"></i> اسم اللاعب:
+      </label>
+      <input type="text" name="name" id="id_name" class="form-control" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="id_minutes_played">
+        <i class="fas fa-stopwatch label-icon"></i> دقائق اللعب:
+      </label>
+      <input type="number" name="minutes_played" id="id_minutes_played" class="form-control" required>
+      <small class="form-hint">إجمالي دقائق اللعب خلال الموسم الحالي</small>
+      <small class="form-hint text-muted">
+        كلما ارتفعت دقائق اللعب عن 300-400 دقيقة أسبوعيًا، زادت دائرة الخطر واحتمالية الإصابة.
+      </small>
+    </div>
+    
+    <div class="form-group">
+      <label for="id_training_load">
+        <i class="fas fa-dumbbell label-icon"></i> الأحمال التدريبية:
+      </label>
+      <input type="number" step="0.1" name="training_load" id="id_training_load" class="form-control" required>
+      <small class="form-hint">مقياس من 0 إلى 100 لشدة التدريب</small>
+    </div>
+    
+    <div class="form-group">
+      <label for="id_prev_injuries">
+        <i class="fas fa-notes-medical label-icon"></i> إصابات سابقة:
+      </label>
+      <input type="number" name="prev_injuries" id="id_prev_injuries" class="form-control" required>
+      <small class="form-hint">عدد الإصابات السابقة التي تعرض لها اللاعب</small>
+    </div>
+    
+    <div class="form-group">
+      <label for="id_age">
+        <i class="fas fa-birthday-cake label-icon"></i> العمر:
+      </label>
+      <input type="number" name="age" id="id_age" class="form-control" required>
+    </div>
+    
+    <div class="button-group">
+      <button type="submit" class="btn btn-primary-custom">
+        <i class="fas fa-save btn-icon"></i> حفظ
+      </button>
+      <a href="{% url 'player_list' %}" class="btn btn-secondary-custom">
+        <i class="fas fa-times btn-icon"></i> إلغاء
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock content %}
