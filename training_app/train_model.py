@@ -16,13 +16,6 @@ def train_injury_model(
     csv_path=os.path.join(BASE_DIR, 'player_data_extended_v2.csv'),
     model_path=os.path.join(BASE_DIR, 'injury_model.pkl')
 ):
-    """
-    1) يقرأ ملف CSV بالأعمدة:
-       [minutes_played, training_load, prev_injuries, age, injury_risk]
-    2) يستخدم Transformer لتجزئة دقائق اللعب وإضافة أعلام للأحمال والعمر.
-    3) يقيس أداء النموذج بـ Cross Validation.
-    4) يدرّب LogisticRegression ويحفظه في injury_model.pkl.
-    """
 
    
     df = pd.read_csv(csv_path)
