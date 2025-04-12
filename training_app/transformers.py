@@ -3,11 +3,6 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class CustomThresholdsTransformer(BaseEstimator, TransformerMixin):
-    """
-    Transformer يقوم بتجهيز الأعمدة قبل إدخالها للنموذج.
-    في هذا المثال، نقوم بإنشاء شرائح (bins) لدقائق اللعب،
-    بالإضافة إلى أعلام أخرى للأحمال والعمر.
-    """
 
     def __init__(self, load_threshold=60, age_threshold=35):
         self.load_threshold = load_threshold

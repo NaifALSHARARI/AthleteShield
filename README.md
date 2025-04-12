@@ -52,7 +52,6 @@ To run the project on your local machine:
 - Django
 - scikit-learn
 - pandas
-- NumPy
 - HTML/CSS/JavaScript
 
 ## Project Structure
